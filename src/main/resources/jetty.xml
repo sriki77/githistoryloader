@@ -1,0 +1,63 @@
+<?xml version="1.0"?>
+<!DOCTYPE Configure PUBLIC "-//Jetty//Configure//EN" "http://www.eclipse.org/jetty/configure_9_0.dtd">
+<Configure id="Loader-Server" class="org.eclipse.jetty.server.Server">
+    <Call name="addConnector">
+        <Arg>
+            <New class="org.eclipse.jetty.server.ServerConnector">
+                <Arg name="server">
+                    <Ref refid="Loader-Server"/>
+                </Arg>
+                <Set name="port">
+                    <Property name="jetty.http.port" default="8080"/>
+                </Set>
+            </New>
+        </Arg>
+    </Call>
+
+
+    <Set name="handler">
+        <New id="Handlers" class="org.eclipse.jetty.server.handler.HandlerCollection">
+            <Set name="handlers">
+                <Array type="org.eclipse.jetty.server.Handler">
+                    <Item>
+                        <New id="Contexts" class="org.eclipse.jetty.server.handler.ContextHandlerCollection">
+                            <Set name="handlers">
+                                <Array type="org.eclipse.jetty.server.Handler">
+                                    <Item>
+                                        <New id="adminHandler" class="org.eclipse.jetty.servlet.ServletContextHandler">
+                                            <Set name="contextPath">/githistory</Set>
+                                            <Call name="addServlet">
+                                                <Arg>
+                                                    <New id="jerseyServlet"
+                                                         class="org.eclipse.jetty.servlet.ServletHolder">
+                                                        <Arg>
+                                                            <New class="org.glassfish.jersey.servlet.ServletContainer"></New>
+                                                        </Arg>
+                                                        <Call name="setInitParameter">
+                                                            <Arg>jersey.config.server.provider.packages</Arg>
+                                                            <Arg>org.sriki.githistory.api;org.sriki.githistory.db</Arg>
+                                                        </Call>
+                                                    </New>
+                                                </Arg>
+                                                <Arg>/*</Arg>
+                                            </Call>
+                                        </New>
+                                    </Item>
+                                </Array>
+                            </Set>
+                        </New>
+                    </Item>
+                </Array>
+            </Set>
+        </New>
+    </Set>
+
+
+    <Set name="stopAtShutdown">true</Set>
+    <Set name="dumpAfterStart">
+        <SystemProperty name="jetty.dump.start" default="false"/>
+    </Set>
+    <Set name="dumpBeforeStop">
+        <SystemProperty name="jetty.dump.stop" default="false"/>
+    </Set>
+</Configure>

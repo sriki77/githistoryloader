@@ -1,0 +1,38 @@
+<!--
+  ~ Copyright (c) 2014, Apigee Corporation.  All rights reserved.
+  ~  Apigee(TM) and the Apigee logo are trademarks or
+  ~  registered trademarks of Apigee Corp. or its subsidiaries.  All other
+  ~  trademarks are the property of their respective owners.
+  -->
+
+<configuration scan="true">
+
+    <property name="defaultPattern" value="%d %thread %-5level %logger{25} - %c{0}.%M\\(\\) : %msg%n"/>
+
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>${defaultPattern}</pattern>
+        </encoder>
+    </appender>
+
+    <appender name="LOGFILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>historyLoader.log</file>
+        <encoder>
+            <pattern>${defaultPattern}</pattern>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>historyLoader-%d.%i.log.gz</fileNamePattern>
+            <maxHistory>10</maxHistory>
+            <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                <maxFileSize>50MB</maxFileSize>
+            </timeBasedFileNamingAndTriggeringPolicy>
+        </rollingPolicy>
+    </appender>
+
+
+    <root level="${log.level:-INFO}">
+        <appender-ref ref="LOGFILE"/>
+        <appender-ref ref="STDOUT"/>
+    </root>
+
+</configuration>
