@@ -42,4 +42,12 @@ public class AbstractService {
     }
 
 
+    protected Response toResponse(int[][] dayTime) {
+        return Response.ok()
+                .entity(dayTime)
+                .header("Access-Control-Allow-Origin", "*")
+                .header("Access-Control-Allow-Methods", "GET, POST, DELETE, PUT")
+                .allow("OPTIONS").build();
+    }
+
 }

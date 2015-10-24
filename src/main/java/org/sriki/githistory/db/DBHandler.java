@@ -15,10 +15,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.sql.Timestamp;
 import java.sql.Types;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 @Provider
@@ -89,8 +88,8 @@ public final class DBHandler {
                             String reviewerName,
                             String parent,
                             String message,
-                            Date mergerDate,
-                            Date authDate,
+                            ZonedDateTime mergerDate,
+                            ZonedDateTime authDate,
                             String mergeEmail,
                             String authorEmail,
                             String tag, int ticketNum, String project) {
@@ -105,8 +104,8 @@ public final class DBHandler {
                     statement.setString(3, reviewerName);
                     statement.setString(4, parent);
                     statement.setString(5, message);
-                    statement.setTimestamp(6, new Timestamp(authDate.getTime()));
-                    statement.setTimestamp(7, new Timestamp(mergerDate.getTime()));
+                    statement.setString(6, authDate.toString());
+                    statement.setString(7, mergerDate.toString());
                     statement.setString(8, authorEmail);
                     statement.setString(9, mergeEmail);
                     if (tag == null) {
@@ -184,7 +183,7 @@ public final class DBHandler {
             return commitList;
         }
         try (Connection connection = getConnection()) {
-            try (PreparedStatement preparedStatement = connection.prepareStatement("Select * from commits")) {
+            try (PreparedStatement preparedStatement = connection.prepareStatement("Select * from commits order by mergetime")) {
                 ResultSet resultSet = preparedStatement.executeQuery();
                 while (resultSet.next()) {
                     Commit commit = new Commit();
@@ -194,13 +193,15 @@ public final class DBHandler {
                     commit.setReviewer(resultSet.getString("reviewer"));
                     commit.setParent(resultSet.getString("parent"));
                     commit.setMessage(resultSet.getString("message"));
-                    commit.setAuthTime(resultSet.getTimestamp("authTime"));
-                    commit.setMergeTime(resultSet.getTimestamp("mergeTime"));
+                    commit.setAuthTime(ZonedDateTime.parse(resultSet.getString("authTime")));
+                    commit.setMergeTime(ZonedDateTime.parse(resultSet.getString("mergeTime")));
                     commit.setAuthEmail(resultSet.getString("authEmail"));
                     commit.setMergeEmail(resultSet.getString("mergeEmail"));
                     commit.setTag(resultSet.getString("tag"));
                     commit.setTickerNum(resultSet.getInt("ticketNum"));
                     commit.setProject(resultSet.getString("project"));
+                    int fileCount = getFileCount(connection, commit.getId());
+                    commit.setFileCount(fileCount);
                     commitList.add(commit);
                 }
             }
@@ -210,6 +211,16 @@ public final class DBHandler {
         LOGGER.info("Total Commits Retrieved: {}", commitList.size());
         return commitList;
     }
+
+    private int getFileCount(Connection connection, int commitId) throws SQLException {
+        try (PreparedStatement preparedStatement = connection.prepareStatement("Select count(*) from COMMIT_FILES where CID=?")) {
+            preparedStatement.setInt(1, commitId);
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                return resultSet.next() ? resultSet.getInt(1) : 0;
+            }
+        }
+    }
+
 
     public static class CommitFilesTracker {
         private final Connection connection;

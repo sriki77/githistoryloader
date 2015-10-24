@@ -1,22 +1,23 @@
 package org.sriki.githistory.model;
 
-import java.util.Date;
+import java.time.ZonedDateTime;
 
 
-public class Commit {
+public class Commit implements Comparable<Commit> {
     private int id;
     private String commitId;
     private String author;
     private String reviewer;
     private String parent;
     private String message;
-    private Date authTime;
-    private Date mergeTime;
+    private ZonedDateTime authTime;
+    private ZonedDateTime mergeTime;
     private String authEmail;
     private String mergeEmail;
     private String tag;
     private int tickerNum;
     private String project;
+    private int fileCount;
 
     public int getId() {
         return id;
@@ -66,19 +67,19 @@ public class Commit {
         this.message = message;
     }
 
-    public Date getAuthTime() {
+    public ZonedDateTime getAuthTime() {
         return authTime;
     }
 
-    public void setAuthTime(Date authTime) {
+    public void setAuthTime(ZonedDateTime authTime) {
         this.authTime = authTime;
     }
 
-    public Date getMergeTime() {
+    public ZonedDateTime getMergeTime() {
         return mergeTime;
     }
 
-    public void setMergeTime(Date mergeTime) {
+    public void setMergeTime(ZonedDateTime mergeTime) {
         this.mergeTime = mergeTime;
     }
 
@@ -122,6 +123,14 @@ public class Commit {
         this.project = project;
     }
 
+    public int getFileCount() {
+        return fileCount;
+    }
+
+    public void setFileCount(int fileCount) {
+        this.fileCount = fileCount;
+    }
+
     @Override
     public String toString() {
         return "Commit{" +
@@ -139,5 +148,10 @@ public class Commit {
                 ", tickerNum=" + tickerNum +
                 ", project='" + project + '\'' +
                 '}';
+    }
+
+    @Override
+    public int compareTo(Commit other) {
+        return this.mergeTime.compareTo(other.mergeTime);
     }
 }

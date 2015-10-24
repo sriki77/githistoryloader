@@ -15,6 +15,8 @@
 
     <!-- Custom styles for this template -->
     <link href="css/dashboard.css" rel="stylesheet">
+    <link href="css/jqcloud.min.css" rel="stylesheet">
+    <link href="css/githistoryloader.css" rel="stylesheet">
 
     <!-- Load c3.css -->
     <link href="css/c3.css" rel="stylesheet" type="text/css">
@@ -47,6 +49,7 @@
         </div>
     </div>
 </nav>
+
 <div class="container-fluid">
     <div class="row">
         <div class="main">
@@ -59,13 +62,13 @@
                 </div>
                 <div class="col-xs-8 col-sm-4 placeholder">
                     <a href="#developers">
-                    <img src="img/team.png" class="img-responsive"></a>
+                        <img src="img/team.png" class="img-responsive"></a>
                     <h4>Developers</h4>
                     <span class="text-muted">Developer Stats</span>
                 </div>
                 <div class="col-xs-8 col-sm-4 placeholder">
                     <a href="#releases">
-                    <img src="img/pkg.png" class="img-responsive"></a>
+                        <img src="img/pkg.png" class="img-responsive"></a>
                     <h4>Releases</h4>
                     <span class="text-muted">Release Stats</span>
                 </div>
@@ -73,27 +76,125 @@
 
             <h3 class="sub-header">Commits</h3>
             <a name="commits"></a>
-            <div class="row">
+
+            <div class="row" align="center">
                 <div class="col-lg-12">
-                    Total Commits: <span id="total-commits"></span>
+                    <h4>Our Commit Distribution last year (Total Commits: <span id="total-commits"></span>, Total
+                        Reverts: <span id="total-reverts"></span>)</h4>
                 </div>
             </div>
             <div class="row">
                 <div class="col-lg-12">
-                    <div id="commit-chart-date-wise-calendar" style="width: 1000px; height: 500px;"></div>
+                    <div id="commit-chart-date-wise-annotation" style="width: 1500px; height: 500px;"></div>
                 </div>
             </div>
+            <div class="row">
+                <div class="col-lg-12">&nbsp;</div>
+            </div>
+            <div class="row">
+                <div class="col-lg-12">&nbsp;</div>
+            </div>
+
+            <div class="row" align="center">
+                <div class="col-lg-12">
+                    <h4>Commit Distribution By Calendar Units (Year,Month,Day,Hour)</h4>
+                </div>
+            </div>
+            <div class="row" align="center">
+                <div class="col-lg-12">
+                    <div id="commit-chart-daytime-table" style="height: 500px;"></div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-lg-12">&nbsp;</div>
+            </div>
+            <div class="row">
+                <div class="col-lg-12">&nbsp;</div>
+            </div>
+
+            <div class="row" align="center">
+                <div class="col-lg-4">
+                    <h4>Commit Distribution By Project</h4>
+                </div>
+                <div class="col-lg-4">
+                    <h4>Revert Commit Distribution By Project</h4>
+                </div>
+                <div class="col-lg-4">
+                    <h4>Histogram of Commit Sizes</h4>
+                </div>
+            </div>
+            <div class="row" align="center">
+                <div class="col-lg-4">
+                    <div id="commit-chart-project-wise" style="height: 350px;"></div>
+
+                </div>
+                <div class="col-lg-4">
+                    <div id="commit-reverts"></div>
+                </div>
+                <div class="col-lg-4">
+                    <div id="commit-chart-size-wise" style="height: 350px;"></div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-lg-12">&nbsp;</div>
+            </div>
+            <div class="row">
+                <div class="col-lg-12">&nbsp;</div>
+            </div>
+
             <h3 class="sub-header">Developers</h3>
             <a name="developers"></a>
 
+            <div class="row" align="center">
+                <div class="col-lg-6">
+                    <h4>Developer Tag Cloud</h4>
+                </div>
+                <div class="col-lg-6">
+                    <h4>Reviewers Tag Cloud</h4>
+                </div>
+            </div>
+            <div class="row" align="center">
+                <div class="col-lg-6">
+                    <div id="commit-developers" style="width: 100%;height: 500px;"></div>
+                </div>
+                <div class="col-lg-6">
+                    <div id="commit-reviewers" style="width: 100%;height: 500px;"></div>
+                </div>
+            </div>
 
+            <div class="row" align="center">
+                <div class="col-lg-12">
+                    <h4>Day of most commits</h4>
+                </div>
+            </div>
+            <div class="row" align="center">
+                <div class="col-lg-12">
+                    <div id="commit-dev-day" style="width: 100%;"></div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-lg-12">&nbsp;</div>
+            </div>
+            <div class="row">
+                <div class="col-lg-12">&nbsp;</div>
+            </div>
             <h3 class="sub-header">Releases</h3>
             <a name="releases"></a>
-
+            <div class="row" align="center">
+                <div class="col-lg-12">
+                    <h4>Release Composition</h4>
+                </div>
+            </div>
+            <div class="row" align="center">
+                <div class="col-lg-12">
+                    <div id="release-composition" style="height: 750px;"></div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
-
 
 
 <!-- JavaScript
@@ -105,6 +206,7 @@
 <script src="js/c3.min.js"></script>
 <script src="js/moment.js"></script>
 <script src="js/jsapi.js"></script>
+<script src="js/jqcloud.min.js"></script>
 <script src="git-history-data.js"></script>
 </body>
 </html>

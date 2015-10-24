@@ -19,18 +19,20 @@ import java.io.File;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TimeZone;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class GitHandler {
     private static final Logger LOGGER = LoggerFactory.getLogger(GitHandler.class);
     public static final LoaderProperties loaderProperties = LoaderProperties.getInstance();
-    public static final int ONE_YEAR = 366;
+    public static final int ONE_YEAR = 365;
     private final File gitPath;
     private final DBHandler dbHandler;
 
@@ -55,7 +57,6 @@ public class GitHandler {
 
         Date untilDate = untilDate();
         Map<String, String> idRevTagMap = revTagMap(repository, git);
-
         int num = 0;
         for (RevCommit commit : commits) {
             Date when = commit.getCommitterIdent().getWhen();
@@ -96,18 +97,23 @@ public class GitHandler {
             throw new RuntimeException("Failed to parse message: " + message + " Splits: " + Arrays.toString(splits), e);
         }
 
-        LOGGER.info("Importing commit: {}.{}", num, message);
+        LOGGER.debug("Importing commit: {}.{}", num, message);
         return dbHandler.insertCommit(
                 commit.getId().getName(),
                 commit.getCommitterIdent().getName(),
                 commit.getAuthorIdent().getName(),
                 commit.getParent(0).getName(),
                 message.trim(),
-                commit.getCommitterIdent().getWhen(),
-                commit.getAuthorIdent().getWhen(),
+                toDateWithTimezone(commit.getCommitterIdent().getWhen(), commit.getCommitterIdent().getTimeZone()),
+                toDateWithTimezone(commit.getAuthorIdent().getWhen(), commit.getAuthorIdent().getTimeZone()),
                 commit.getCommitterIdent().getEmailAddress(),
                 commit.getAuthorIdent().getEmailAddress(),
                 idRevTagMap.get(commit.getId().getName()), ticket, project);
+    }
+
+    private ZonedDateTime toDateWithTimezone(Date commitDate, TimeZone timeZone) {
+        ZonedDateTime zonedDateTime = commitDate.toInstant().atZone(timeZone.toZoneId());
+        return zonedDateTime;
     }
 
     private Map<String, String> revTagMap(Repository repository, Git git) throws GitAPIException {
