@@ -31,7 +31,7 @@
 <body>
 
 <nav class="navbar navbar-default navbar-fixed-top">
-    <div class="container-fluid">
+    <div class="container">
         <div class="navbar-header">
             <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar"
                     aria-expanded="false" aria-controls="navbar">
@@ -40,160 +40,121 @@
                 <span class="icon-bar"></span>
                 <span class="icon-bar"></span>
             </button>
-            <a class="navbar-brand" href="#">Apigee Gateway Team Stats - (2014-2015)</a>
+            <a class="navbar-brand" href="#"><span id="team-name"></span> Team Stats - (<span id="date-range"></span>)</a>
         </div>
         <div id="navbar" class="navbar-collapse collapse">
             <ul class="nav navbar-nav navbar-right">
-                <li><a href="#">Based on Git Commit Log</a></li>
+                <li><a href="#">Based on Git Commit Log (Branch: <span id="git-branch"></span>)</a></li>
             </ul>
         </div>
     </div>
 </nav>
+ <div class="container">
 
-<div class="container-fluid">
-    <div class="row">
-        <div class="main">
-            <div class="row placeholders">
-                <div class="col-xs-8 col-sm-4 placeholder">
-                    <a href="#commits">
-                        <img src="img/git.png" class="img-responsive"></a>
-                    <h4>Commits</h4>
-                    <span class="text-muted">Commit Stats</span>
-                </div>
-                <div class="col-xs-8 col-sm-4 placeholder">
-                    <a href="#developers">
-                        <img src="img/team.png" class="img-responsive"></a>
-                    <h4>Developers</h4>
-                    <span class="text-muted">Developer Stats</span>
-                </div>
-                <div class="col-xs-8 col-sm-4 placeholder">
-                    <a href="#releases">
-                        <img src="img/pkg.png" class="img-responsive"></a>
-                    <h4>Releases</h4>
-                    <span class="text-muted">Release Stats</span>
-                </div>
-            </div>
-
-            <h3 class="sub-header">Commits</h3>
-            <a name="commits"></a>
-
-            <div class="row" align="center">
-                <div class="col-lg-12">
-                    <h4>Our Commit Distribution last year (Total Commits: <span id="total-commits"></span>, Total
-                        Reverts: <span id="total-reverts"></span>)</h4>
-                </div>
-            </div>
-            <div class="row">
-                <div class="col-lg-12">
-                    <div id="commit-chart-date-wise-annotation" style="width: 1500px; height: 500px;"></div>
-                </div>
-            </div>
-            <div class="row">
-                <div class="col-lg-12">&nbsp;</div>
-            </div>
-            <div class="row">
-                <div class="col-lg-12">&nbsp;</div>
-            </div>
-
-            <div class="row" align="center">
-                <div class="col-lg-12">
-                    <h4>Commit Distribution By Calendar Units (Year,Month,Day,Hour)</h4>
-                </div>
-            </div>
-            <div class="row" align="center">
-                <div class="col-lg-12">
-                    <div id="commit-chart-daytime-table" style="height: 500px;"></div>
-                </div>
-            </div>
-
-            <div class="row">
-                <div class="col-lg-12">&nbsp;</div>
-            </div>
-            <div class="row">
-                <div class="col-lg-12">&nbsp;</div>
-            </div>
-
-            <div class="row" align="center">
-                <div class="col-lg-4">
-                    <h4>Commit Distribution By Project</h4>
-                </div>
-                <div class="col-lg-4">
-                    <h4>Revert Commit Distribution By Project</h4>
-                </div>
-                <div class="col-lg-4">
-                    <h4>Histogram of Commit Sizes</h4>
-                </div>
-            </div>
-            <div class="row" align="center">
-                <div class="col-lg-4">
-                    <div id="commit-chart-project-wise" style="height: 350px;"></div>
+            <ul class="nav nav-tabs">
+                <li class="active"><a href="#commits-timeline" data-toggle="tab" aria-expanded="true">Commits Timeline</a></li>
+                <li class=""><a href="#commits-dist" data-toggle="tab" aria-expanded="false">Commits Distribution</a></li>
+                <li class=""><a href="#developers" data-toggle="tab" aria-expanded="false">Developer Stats</a></li>
+                <li class=""><a href="#releases" data-toggle="tab" aria-expanded="false">Release Stats</a></li>
+            </ul>
+            <div id="myTabContent" class="tab-content">
+                <div class="tab-pane fade active in" id="commits-timeline">
+                    <div class="row" align="center">
+                        <div class="col-lg-12">
+                            <h4>Our Commit Distribution last year (Total Commits: <span id="total-commits"></span>, Total
+                                Reverts: <span id="total-reverts"></span>)</h4>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-lg-12">
+                            <div id="commit-chart-date-wise-annotation"></div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-lg-12">&nbsp;</div>
+                    </div>
+                    <div class="row" align="center">
+                        <div class="col-lg-12">
+                            <h4>Commit Distribution By Calendar Units (Year,Month,Day,Hour)</h4>
+                        </div>
+                    </div>
+                    <div class="row" align="center">
+                        <div class="col-lg-12">
+                            <div id="commit-chart-daytime-table"></div>
+                        </div>
+                    </div>
 
                 </div>
-                <div class="col-lg-4">
-                    <div id="commit-reverts"></div>
-                </div>
-                <div class="col-lg-4">
-                    <div id="commit-chart-size-wise" style="height: 350px;"></div>
-                </div>
-            </div>
 
-            <div class="row">
-                <div class="col-lg-12">&nbsp;</div>
-            </div>
-            <div class="row">
-                <div class="col-lg-12">&nbsp;</div>
-            </div>
+                <div class="tab-pane fade" id="commits-dist">
+                    <div class="row">
+                        <div class="col-lg-4" align="center">
+                            <h4>Commit Distribution By Project</h4>
+                        </div>
+                        <div class="col-lg-3" align="center">
+                            <h4>Revert Commit Distribution By Project</h4>
+                        </div>
+                        <div class="col-lg-5" align="center">
+                            <h4>Histogram of Commit Sizes</h4>
+                        </div>
+                    </div>
 
-            <h3 class="sub-header">Developers</h3>
-            <a name="developers"></a>
+                    <div class="row">
+                        <div class="col-lg-4" align="center">
+                            <div id="commit-chart-project-wise"></div>
 
-            <div class="row" align="center">
-                <div class="col-lg-6">
-                    <h4>Developer Tag Cloud</h4>
+                        </div>
+                        <div class="col-lg-3" align="center">
+                            <div id="commit-reverts"></div>
+                        </div>
+                        <div class="col-lg-5" align="center">
+                            <div id="commit-chart-size-wise"></div>
+                        </div>
+                    </div>
                 </div>
-                <div class="col-lg-6">
-                    <h4>Reviewers Tag Cloud</h4>
-                </div>
-            </div>
-            <div class="row" align="center">
-                <div class="col-lg-6">
-                    <div id="commit-developers" style="width: 100%;height: 500px;"></div>
-                </div>
-                <div class="col-lg-6">
-                    <div id="commit-reviewers" style="width: 100%;height: 500px;"></div>
-                </div>
-            </div>
 
-            <div class="row" align="center">
-                <div class="col-lg-12">
-                    <h4>Day of most commits</h4>
+                <div class="tab-pane fade" id="developers">
+                    <div class="row" align="center">
+                        <div class="col-lg-6">
+                            <h4>Developer Tag Cloud</h4>
+                        </div>
+                        <div class="col-lg-6">
+                            <h4>Reviewers Tag Cloud</h4>
+                        </div>
+                    </div>
+                    <div class="row" align="center">
+                        <div class="col-lg-6">
+                            <div id="commit-developers"></div>
+                        </div>
+                        <div class="col-lg-6">
+                            <div id="commit-reviewers"></div>
+                        </div>
+                    </div>
+
+                    <div class="row" align="center">
+                        <div class="col-lg-12">
+                            <h4>Day of most commits</h4>
+                        </div>
+                    </div>
+                    <div class="row" align="center">
+                        <div class="col-lg-12">
+                            <div id="commit-dev-day"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="tab-pane fade" id="releases">
+                    <div class="row" align="center">
+                        <div class="col-lg-12">
+                            <h4>Release Composition</h4>
+                        </div>
+                    </div>
+                    <div class="row" align="center">
+                        <div class="col-lg-12">
+                            <div id="release-composition"></div>
+                        </div>
+                    </div>
                 </div>
             </div>
-            <div class="row" align="center">
-                <div class="col-lg-12">
-                    <div id="commit-dev-day" style="width: 100%;"></div>
-                </div>
-            </div>
-            <div class="row">
-                <div class="col-lg-12">&nbsp;</div>
-            </div>
-            <div class="row">
-                <div class="col-lg-12">&nbsp;</div>
-            </div>
-            <h3 class="sub-header">Releases</h3>
-            <a name="releases"></a>
-            <div class="row" align="center">
-                <div class="col-lg-12">
-                    <h4>Release Composition</h4>
-                </div>
-            </div>
-            <div class="row" align="center">
-                <div class="col-lg-12">
-                    <div id="release-composition" style="height: 750px;"></div>
-                </div>
-            </div>
-        </div>
-    </div>
 </div>
 
 
@@ -201,12 +162,12 @@
 ================================================== -->
 
 <script src="js/jquery.min.js"></script>
+<script src="js/jqcloud.min.js"></script>
 <script src="js/bootstrap.min.js"></script>
 <script src="js/d3.min.js" charset="utf-8"></script>
 <script src="js/c3.min.js"></script>
 <script src="js/moment.js"></script>
 <script src="js/jsapi.js"></script>
-<script src="js/jqcloud.min.js"></script>
 <script src="git-history-data.js"></script>
 </body>
 </html>

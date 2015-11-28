@@ -14,8 +14,8 @@ public final class LoaderProperties {
     private static final Logger LOGGER = LoggerFactory.getLogger(LoaderProperties.class);
     private static final LoaderProperties ME = new LoaderProperties();
     private static final int INVALID_VALUE = Integer.MIN_VALUE;
-    public static final String PROPERTIES_FILE = "mirror-reflect-server.properties";
-    public static final String FILE_NAME_PROPERTY = "mirror.reflect.serverPropertiesFile";
+    public static final String PROPERTIES_FILE ="loader.properties";
+    public static final String FILE_NAME_PROPERTY = "loader.propertiesFile";
     private Properties properties = new Properties();
 
     private void loadProperties(File file) {

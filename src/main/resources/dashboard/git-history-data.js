@@ -3,48 +3,44 @@ google.load('visualization', '1', {'packages':['bar']});
 google.setOnLoadCallback(drawChart);
 
 function drawChart() {
-    $.ajax({url: "http://localhost:8080/githistory/commits/date-wise",
+    $.ajax({url: "/githistory/commits/date-wise",
               dataType:"json",
               }).done(drawDateWiseCommitChart);
 
-    $.ajax({url: "http://localhost:8080/githistory/commits/time-wise",
+    $.ajax({url: "/githistory/commits/time-wise",
             dataType:"json",
             }).done(drawTimeWiseCommitChart);
 
-    $.ajax({url: "http://localhost:8080/githistory/commits/date-wise-stats",
+    $.ajax({url: "/githistory/commits/date-wise-stats",
                 dataType:"json",
                 }).done(updateDateWiseStats);
 
-    $.ajax({url: "http://localhost:8080/githistory/commits/project-wise",
+    $.ajax({url: "/githistory/commits/project-wise",
                     dataType:"json",
                     }).done(updateProjectWiseStats);
 
-    $.ajax({url: "http://localhost:8080/githistory/commits/reverts",
+    $.ajax({url: "/githistory/commits/reverts",
                     dataType:"json",
                     }).done(updateRevertStats);
 
-    $.ajax({url: "http://localhost:8080/githistory/commits/size-wise",
+    $.ajax({url: "/githistory/commits/size-wise",
                         dataType:"json",
                         }).done(updateSizeWiseStats);
 
-    $.ajax({url: "http://localhost:8080/githistory/commits/developers",
+    $.ajax({url: "/githistory/commits/developers",
                             dataType:"json",
                             }).done(updateDeveloperStats);
 
 
-    $.ajax({url: "http://localhost:8080/githistory/commits/reviewers",
+    $.ajax({url: "/githistory/commits/reviewers",
                                 dataType:"json",
                                 }).done(updateReviewerStats);
 
-    $.ajax({url: "http://localhost:8080/githistory/commits/developer-day-of-week",
+    $.ajax({url: "/githistory/commits/developer-day-of-week",
                                 dataType:"json",
                                 }).done(updateDeveloperDayPrefStats);
 
-//    $.ajax({url: "http://localhost:8080/githistory/commits/release-sizes",
-//                                    dataType:"json",
-//                                    }).done(updateReleaseSizes);
-
-    $.ajax({url: "http://localhost:8080/githistory/commits/release-composition",
+    $.ajax({url: "/githistory/commits/release-composition",
                                     dataType:"json",
                                     }).done(updateReleaseComposition);
 }
@@ -63,31 +59,13 @@ function updateReleaseComposition(jsonData){
             }
         });
 
-        var options = {width: '100%', height: '100%',isStacked: true,
-        legend: { position: 'none' },bar: {groupWidth: "95%"},hAxis:{title: 'Release'},
+        var options = {width: 1200, height:500,isStacked: true,
+        legend: { position: 'none' },hAxis:{slantedText:true},
                 vAxis:{title: 'Commits By Project'}};
 
        var chart=new google.visualization.ColumnChart(document.getElementById('release-composition'));
        chart.draw(data,options);
 }
-
-function updateReleaseSizes(jsonData){
-    var data = new google.visualization.DataTable();
-    data.addColumn('string','Release');
-    data.addColumn('number','Commit Count');
-
-    $.each(jsonData,function(k,v){
-        console.log([k,v]);
-        data.addRow([k,v]);
-    });
-
-    var options = {legend: { position: "none" },vAxis: { title:'Commit Count', maxTextLines: 1, showTextEvery: 2}
-    , hAxis: { title:'Releases'}};
-
-   var chart=new google.visualization.ColumnChart(document.getElementById('release-sizes'));
-   chart.draw(data,options);
-}
-
 
 function updateDeveloperDayPrefStats(jsonData){
     var data = new google.visualization.DataTable();
@@ -112,30 +90,34 @@ function updateDeveloperDayPrefStats(jsonData){
 }
 
 function updateDeveloperStats(jsonData){
-    var data = new google.visualization.DataTable();
-    data.addColumn('string','Developer');
-    data.addColumn('number','Count');
     var words=[];
     $.each(jsonData,function(k,v){
        words.push({text: k, weight:v});
     });
-    $('#commit-developers').jQCloud(words,{autoResize:true});
+    $("a[href='#developers']").on('shown.bs.tab', function(){
+        $('#commit-developers').jQCloud('destroy');
+        $('#commit-developers').jQCloud(words,{autoResize:true,height:500});
+    });
 }
 
 function updateReviewerStats(jsonData){
-    var data = new google.visualization.DataTable();
-    data.addColumn('string','Reviewer');
-    data.addColumn('number','Count');
     var words=[];
     $.each(jsonData,function(k,v){
        words.push({text: k, weight:v});
     });
-    $('#commit-reviewers').jQCloud(words,{autoResize:true});
+
+     $("a[href='#developers']").on('shown.bs.tab', function(){
+            $('#commit-reviewers').jQCloud('destroy');
+            $('#commit-reviewers').jQCloud(words,{autoResize:true,height:500});
+        });
 }
 
 function updateDateWiseStats(jsonData){
     $("#total-commits").text(jsonData.total);
     $("#total-reverts").text(jsonData.reverts);
+    $("#git-branch").text(jsonData.branch);
+    $("#date-range").text(jsonData.dateRange);
+    $("#team-name").text(jsonData.team);
 }
 
 function updateProjectWiseStats(jsonData){
@@ -147,22 +129,23 @@ function updateProjectWiseStats(jsonData){
         data.addRow([k,v]);
     });
 
-    var options = {width: '100%', height: '100%',is3D: false,legend: { position: "none" },pieSliceText: 'label',pieHole: 0.4};
+    var options = {height: 500, width: 500,
+    legend: { position: "none" }};
 
-   var chart=new google.visualization.PieChart(document.getElementById('commit-chart-project-wise'));
+   var chart=new google.visualization.BarChart(document.getElementById('commit-chart-project-wise'));
    chart.draw(data,options);
 }
 
 function updateRevertStats(jsonData){
     var data = new google.visualization.DataTable();
     data.addColumn('string','Project');
-    data.addColumn('number','Revert Commit Count');
+    data.addColumn('number','Revert Commits');
 
     $.each(jsonData,function(k,v){
         data.addRow([k,v]);
     });
 
-    var options = {width: '100%', height: '100%',is3D: false,legend: { position: "none" },pieSliceText: 'label',pieHole: 0.4};
+    var options = {legend: { position: "none" }};
 
    var chart=new google.visualization.Table(document.getElementById('commit-reverts'));
    chart.draw(data);
@@ -178,7 +161,7 @@ function updateSizeWiseStats(jsonData){
         data.addRow([k,v]);
     });
 
-    var options = {width: '100%', height: '100%',
+    var options = {width: 600, height: 500,
     legend: { position: "none" },histogram: { lastBucketPercentile: 5 },hAxis:{showTextEvery: 2,
     title: 'File Modification Count(Add,Del,Change)'},
                 vAxis: { title: 'Commits'}};
@@ -197,7 +180,7 @@ function drawTimeWiseCommitChart(jsonData){
         data.addRow([jsonData[index][0],jsonData[index][1],parseInt(jsonData[index][2])]);
     }
 
-    var options = {width: '100%', height: '100%',
+    var options = {width: 1000, height: 500,
                  maxDepth: 1,maxPostDepth: 2, fontColor: '#ffff00',fontSize: '16',
                  minColor: '#009688',midColor: '#f7f7f7',maxColor: '#ee8100', showTitle: false,
                  headerHeight: 0,showScale: true,showToolTip:false,
@@ -221,7 +204,9 @@ function drawDateWiseCommitChart(jsonData){
        data.addRow([m.toDate(),parseInt(v[0]),v[1]]);
     });
     var options = {
-              displayAnnotations: true
+              displayAnnotations: true,
+              width: 1200,
+              height: 500
             };
    var chart = new google.visualization.AnnotationChart(document.getElementById('commit-chart-date-wise-annotation'));
    chart.draw(data,options);

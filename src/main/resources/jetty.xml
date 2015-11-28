@@ -43,6 +43,9 @@
                                             </Call>
                                         </New>
                                     </Item>
+                                    <Item>
+                                        <New id="DefaultHandler" class="org.sriki.githistory.web.StaticPageHandler"/>
+                                    </Item>
                                 </Array>
                             </Set>
                         </New>

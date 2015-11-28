@@ -16,9 +16,6 @@ CREATE TABLE commits
   tag character varying(255),
   ticketNum integer,
   project character varying(255)
-)
-WITH (
-  OIDS=FALSE
 );
 
 
@@ -28,7 +25,4 @@ CREATE TABLE commit_files
   cid integer REFERENCES commits (id),
   fileName character varying(255),
   changeType character varying(255)
-)
-WITH (
-  OIDS=FALSE
 );

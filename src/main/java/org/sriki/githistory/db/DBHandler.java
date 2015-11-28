@@ -1,10 +1,9 @@
 package org.sriki.githistory.db;
 
-import org.apache.commons.dbcp.BasicDataSource;
 import org.apache.commons.io.IOUtils;
+import org.h2.jdbcx.JdbcDataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.sriki.githistory.LoaderProperties;
 import org.sriki.githistory.model.Commit;
 
 import javax.ws.rs.ext.Provider;
@@ -16,22 +15,26 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Types;
+import java.text.DateFormat;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
+//-Dloader.dbUrl=jdbc:postgresql://localhost:5432/git_history?user=postgres
 @Provider
 public final class DBHandler {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DBHandler.class);
-    public static final String DB_DRIVER = "org.postgresql.Driver";
-    public static final String DEFAULT_PG_URL = "jdbc:postgresql://localhost:5432/git_history?user=postgres&password=postgres";
+    public static final String DB_USER = "sa";
+    public static final String DEFAULT_DB_URL = "jdbc:h2:~/githistoryloader;LOG=0;CACHE_SIZE=65536;LOCK_MODE=0;UNDO_LOG=0;MVCC=TRUE";
     public static final String DBSCHEMA_SQL = "dbschema.sql";
-    public static final LoaderProperties loaderProperties = LoaderProperties.getInstance();
-    public static final String LOADER_DB_URL_PROPERTY = "loader.dbUrl";
-    private final BasicDataSource basicDataSource;
+    private final JdbcDataSource basicDataSource;
     private static final DBHandler ME = new DBHandler();
     private List<Commit> commitList = new ArrayList<>();
+    private String gitBranch;
+    private Date from;
+    private Date to;
 
     private DBHandler() {
         try {
@@ -45,10 +48,11 @@ public final class DBHandler {
         return ME;
     }
 
-    private BasicDataSource initDriver() throws Exception {
-        BasicDataSource basicDataSource = new BasicDataSource();
-        basicDataSource.setDriverClassName(DB_DRIVER);
-        basicDataSource.setUrl(getDBURL());
+    private JdbcDataSource initDriver() throws Exception {
+        JdbcDataSource basicDataSource = new JdbcDataSource();
+        basicDataSource.setUrl(DEFAULT_DB_URL);
+        basicDataSource.setUser(DB_USER);
+        basicDataSource.setPassword(DB_USER);
         return basicDataSource;
     }
 
@@ -56,11 +60,8 @@ public final class DBHandler {
         return basicDataSource.getConnection();
     }
 
-    private String getDBURL() {
-        return loaderProperties.getProperty(LOADER_DB_URL_PROPERTY, DEFAULT_PG_URL);
-    }
-
     public void initDB() throws SQLException, IOException {
+        LOGGER.info("Creating Database....");
         try (Connection connection = getConnection()) {
             try (Statement statement = connection.createStatement()) {
                 String sqls = loadDbSchema();
@@ -73,6 +74,7 @@ public final class DBHandler {
                 }
             }
         }
+        LOGGER.info("Database Created And Ready For Use....");
     }
 
     private String loadDbSchema() throws IOException {
@@ -135,7 +137,7 @@ public final class DBHandler {
                     = connection.prepareStatement(
                     "INSERT INTO COMMIT_FILES(CID,FILENAME,CHANGETYPE)" +
                             " VALUES(?,?,?)");
-            return new CommitFilesTracker(connection, statement, id);
+            return new CommitFilesTracker(statement, id);
         } catch (SQLException e) {
             throw new RuntimeException("Failed to prepare commit files", e);
         }
@@ -147,20 +149,9 @@ public final class DBHandler {
             statement.setInt(1, tracker.id);
             statement.setString(2, path);
             statement.setString(3, changeType);
-            statement.addBatch();
+            statement.execute();
         } catch (SQLException e) {
             throw new RuntimeException("Failed to add to batch: " + path, e);
-        }
-    }
-
-    public void persistCommitFiles(CommitFilesTracker tracker) {
-        try (Connection connection = tracker.connection) {
-            try (PreparedStatement preparedStatement = tracker.statement) {
-                preparedStatement.executeBatch();
-                connection.commit();
-            }
-        } catch (SQLException e) {
-            throw new RuntimeException("Failed to commit files ", e);
         }
     }
 
@@ -179,6 +170,7 @@ public final class DBHandler {
 //        ticketNum integer,
 //        project character varying(255)
     public synchronized List<Commit> commits() {
+        LOGGER.info("Loading commits to calculate stats. This might take sometime ...");
         if (!commitList.isEmpty()) {
             return commitList;
         }
@@ -221,14 +213,29 @@ public final class DBHandler {
         }
     }
 
+    public void setGitBranch(String gitBranch) {
+        this.gitBranch = gitBranch;
+    }
+
+    public String getGitBranch() {
+        return gitBranch;
+    }
+
+    public String getDateRange() {
+        DateFormat dateFormat = DateFormat.getDateInstance(DateFormat.MEDIUM);
+        return dateFormat.format(from) + " - " + dateFormat.format(to);
+    }
+
+    public void setDateRange(Date from, Date to) {
+        this.from = from;
+        this.to = to;
+    }
 
     public static class CommitFilesTracker {
-        private final Connection connection;
         private final PreparedStatement statement;
         private final int id;
 
-        public CommitFilesTracker(Connection connection, PreparedStatement statement, int id) {
-            this.connection = connection;
+        public CommitFilesTracker(PreparedStatement statement, int id) {
             this.statement = statement;
             this.id = id;
         }

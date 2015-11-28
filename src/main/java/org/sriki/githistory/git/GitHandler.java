@@ -54,10 +54,14 @@ public class GitHandler {
         Iterable<RevCommit> commits = git.log()
                 .add(repository.resolve(Constants.HEAD))
                 .call();
-
         Date untilDate = untilDate();
+        dbHandler.setGitBranch(repository.getBranch());
+        dbHandler.setDateRange(untilDate,new Date());
         Map<String, String> idRevTagMap = revTagMap(repository, git);
         int num = 0;
+
+        LOGGER.info("Loading commits....into tables");
+        long start = System.currentTimeMillis();
         for (RevCommit commit : commits) {
             Date when = commit.getCommitterIdent().getWhen();
             if (when.before(untilDate)) {
@@ -66,10 +70,13 @@ public class GitHandler {
             insertCommitFiles(repository, commit, insertCommit(idRevTagMap, num, commit));
             ++num;
         }
-        System.err.println("Total Commits: " + num);
+        LOGGER.info(String.format("Loaded %s commits, Time Taken: %s millis", num, (System.currentTimeMillis() - start)));
     }
 
     private void insertCommitFiles(Repository repository, RevCommit commit, int id) throws IOException {
+        if (id == -1) {
+            return;
+        }
         RevCommit parent = commit.getParent(0);
         DiffFormatter diffFormatter = new DiffFormatter(System.out);
         diffFormatter.setRepository(repository);
@@ -81,7 +88,6 @@ public class GitHandler {
 
             dbHandler.addCommitFiles(commitFilesTracker, changeType, path);
         }
-        dbHandler.persistCommitFiles(commitFilesTracker);
     }
 
     private int insertCommit(Map<String, String> idRevTagMap, int num, RevCommit commit) {
@@ -95,6 +101,10 @@ public class GitHandler {
             ticket = Integer.parseInt(splits[1]);
         } catch (Exception e) {
             throw new RuntimeException("Failed to parse message: " + message + " Splits: " + Arrays.toString(splits), e);
+        }
+
+        if(project.trim().length()==0){
+            project=message.split(" ")[0];
         }
 
         LOGGER.debug("Importing commit: {}.{}", num, message);

@@ -2,6 +2,7 @@ package org.sriki.githistory.api;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.sriki.githistory.LoaderProperties;
 import org.sriki.githistory.db.DBHandler;
 import org.sriki.githistory.model.Commit;
 
@@ -33,6 +34,7 @@ import java.util.stream.Collectors;
 public class CommitService extends AbstractService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CommitService.class);
+    public static final String TEAM_NAME_PROPERTY = "loader.team";
     private final DBHandler dbHandler;
     private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
 
@@ -210,9 +212,12 @@ public class CommitService extends AbstractService {
     @Path("/date-wise-stats")
     public Response commitsDateWiseStats() {
         List<Commit> commitList = dbHandler.commits();
-        Map<String, Integer> commitStats = new HashMap<>();
-        commitStats.put("total", commitList.size());
-        commitStats.put("reverts", (int) commitList.stream().filter(c -> c.getMessage().toLowerCase().contains("revert")).count());
+        Map<String, String> commitStats = new HashMap<>();
+        commitStats.put("total", "" + commitList.size());
+        commitStats.put("reverts", "" + commitList.stream().filter(c -> c.getMessage().toLowerCase().contains("revert")).count());
+        commitStats.put("branch", dbHandler.getGitBranch());
+        commitStats.put("dateRange", dbHandler.getDateRange());
+        commitStats.put("team", LoaderProperties.getInstance().getProperty(TEAM_NAME_PROPERTY));
         return toResponse(commitStats);
     }
 
@@ -240,9 +245,9 @@ public class CommitService extends AbstractService {
     public Response releaseComposition() {
         List<Commit> commitList = dbHandler.commits();
         Map<String, Object> releaseComposition = new LinkedHashMap<>();
-        Set<String> projects=commitList.stream().map(c -> c.getProject()).collect(Collectors.toCollection(TreeSet::new));
+        Set<String> projects = commitList.stream().map(c -> c.getProject()).collect(Collectors.toCollection(TreeSet::new));
         String headerRow = "header";
-        releaseComposition.put(headerRow,projects);
+        releaseComposition.put(headerRow, projects);
         Map<String, Integer> projectWiseCount = new HashMap<>();
         initProjectMap(projects, projectWiseCount);
         for (Commit commit : commitList) {
@@ -252,21 +257,21 @@ public class CommitService extends AbstractService {
             String tag = commit.getTag();
             if (tag != null) {
                 tag = tag.substring(tag.lastIndexOf('/') + 1);
-                releaseComposition.put(tag,new TreeMap<>(projectWiseCount));
+                releaseComposition.put(tag, new TreeMap<>(projectWiseCount));
                 initProjectMap(projects, projectWiseCount);
             }
         }
         for (String releases : releaseComposition.keySet()) {
-            if(releases.startsWith(headerRow)){
+            if (releases.startsWith(headerRow)) {
                 continue;
             }
-            projectWiseCount= (Map<String, Integer>) releaseComposition.get(releases);
+            projectWiseCount = (Map<String, Integer>) releaseComposition.get(releases);
             Object[] counts = new Object[projects.size()];
-            int index=0;
+            int index = 0;
             for (Integer v : projectWiseCount.values()) {
-                counts[index++]=v;
+                counts[index++] = v;
             }
-            releaseComposition.put(releases,counts);
+            releaseComposition.put(releases, counts);
         }
 
         return toResponse(releaseComposition);
@@ -275,7 +280,7 @@ public class CommitService extends AbstractService {
     private void initProjectMap(Set<String> projects, Map<String, Integer> projectWiseCount) {
         projectWiseCount.clear();
         for (String project : projects) {
-            projectWiseCount.put(project,0);
+            projectWiseCount.put(project, 0);
         }
     }
 
