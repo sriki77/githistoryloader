@@ -132,7 +132,6 @@ public final class DBHandler {
     public CommitFilesTracker prepareCommitFiles(int id) {
         try {
             Connection connection = getConnection();
-            connection.setAutoCommit(false);
             PreparedStatement statement
                     = connection.prepareStatement(
                     "INSERT INTO COMMIT_FILES(CID,FILENAME,CHANGETYPE)" +
@@ -170,7 +169,7 @@ public final class DBHandler {
 //        ticketNum integer,
 //        project character varying(255)
     public synchronized List<Commit> commits() {
-        LOGGER.info("Loading commits to calculate stats. This might take sometime ...");
+        LOGGER.info("Loading commits to calculate stats. This might take some time ...");
         if (!commitList.isEmpty()) {
             return commitList;
         }
