@@ -12,3 +12,4 @@ java -jar githistoryloader-1.0.jar  *git_repo_directory*
 3. The git data is parsed and loaded to a in-memory database.
 4. The reports are produced out of the data in the database.  
 
+**Note:** Java 8 is a prerequisite.
