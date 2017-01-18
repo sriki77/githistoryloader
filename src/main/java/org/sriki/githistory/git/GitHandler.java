@@ -56,7 +56,7 @@ public class GitHandler {
                 .call();
         Date untilDate = untilDate();
         dbHandler.setGitBranch(repository.getBranch());
-        dbHandler.setDateRange(untilDate,new Date());
+        dbHandler.setDateRange(untilDate, new Date());
         Map<String, String> idRevTagMap = revTagMap(repository, git);
         int num = 0;
 
@@ -74,7 +74,7 @@ public class GitHandler {
     }
 
     private void insertCommitFiles(Repository repository, RevCommit commit, int id) throws IOException {
-        if (id == -1) {
+        if (id == -1 || commit.getParentCount() == 0) {
             return;
         }
         RevCommit parent = commit.getParent(0);
@@ -93,18 +93,25 @@ public class GitHandler {
     private int insertCommit(Map<String, String> idRevTagMap, int num, RevCommit commit) {
         String message = commit.getShortMessage();
         String[] splits = null;
-        String project;
-        int ticket;
+        String project = "MON";
+        int ticket=-1;
         try {
             splits = getTicketDetails(message);
-            project = splits[0];
-            ticket = Integer.parseInt(splits[1]);
+            if (splits.length == 1) {
+                try {
+                    ticket = Integer.parseInt(splits[0]);
+                } catch (NumberFormatException e) {
+                    LOGGER.info("Igoring message unparseable ticket num in message: {}",message);
+                }
+            } else {
+                ticket = Integer.parseInt(splits[1]);
+            }
         } catch (Exception e) {
             throw new RuntimeException("Failed to parse message: " + message + " Splits: " + Arrays.toString(splits), e);
         }
 
-        if(project.trim().length()==0){
-            project=message.split(" ")[0];
+        if (project.trim().length() == 0) {
+            project = message.split(" ")[0];
         }
 
         LOGGER.debug("Importing commit: {}.{}", num, message);
@@ -112,7 +119,7 @@ public class GitHandler {
                 commit.getId().getName(),
                 commit.getCommitterIdent().getName(),
                 commit.getAuthorIdent().getName(),
-                commit.getParent(0).getName(),
+                commit.getParentCount() == 0 ? null : commit.getParent(0).getName(),
                 message.trim(),
                 toDateWithTimezone(commit.getCommitterIdent().getWhen(), commit.getCommitterIdent().getTimeZone()),
                 toDateWithTimezone(commit.getAuthorIdent().getWhen(), commit.getAuthorIdent().getTimeZone()),
@@ -145,13 +152,13 @@ public class GitHandler {
     }
 
     private String[] getTicketDetails(String message) {
-        Pattern pattern = Pattern.compile("\\[([^\\]]+)\\]");
+        Pattern pattern = Pattern.compile("#([^\\|]*)\\|");
         Matcher matcher = pattern.matcher(message);
         if (!matcher.find()) {
             return new String[]{"", "-1"};
         }
         ;
-        String ticketDetails = matcher.group(1);
+        String ticketDetails = matcher.group(1).trim();
         return ticketDetails.split("-|_");
     }
 

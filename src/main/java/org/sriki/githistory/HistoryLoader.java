@@ -15,6 +15,7 @@ import java.sql.SQLException;
 public class HistoryLoader {
 
     public static final String JETTY_XML = "/jetty.xml";
+    public static final String GIT_REPOS_PROPERTY = "loader.git.repos";
     private DBHandler dbHandler;
     private static final Logger LOGGER = LoggerFactory.getLogger(HistoryLoader.class);
     private Server jetty;
@@ -24,16 +25,14 @@ public class HistoryLoader {
     }
 
     public static void main(String[] args) throws Exception {
-        String gitPath = args.length == 0 ? null : args[0];
-
         LoaderProperties loaderProps = LoaderProperties.getInstance();
         loaderProps.init();
 
         HistoryLoader historyLoader = new HistoryLoader();
-        if (gitPath != null) {
-            historyLoader.loadGit(gitPath);
+        String gitRepos = loaderProps.getProperty(GIT_REPOS_PROPERTY);
+        if (gitRepos != null) {
+            historyLoader.loadGit(gitRepos.split(","));
         }
-
         historyLoader.startServer();
     }
 
@@ -55,10 +54,13 @@ public class HistoryLoader {
         return new XmlConfiguration(this.getClass().getResourceAsStream(JETTY_XML));
     }
 
-    private void loadGit(String gitPath) throws IOException, GitAPIException, SQLException {
+    private void loadGit(String[] gitPath) throws IOException, GitAPIException, SQLException {
         dbHandler.initDB();
-        GitHandler gitHandler = new GitHandler(gitPath, dbHandler);
-        gitHandler.init();
+        for (String g : gitPath) {
+            LOGGER.info("Loading git path: {}",g);
+            GitHandler gitHandler = new GitHandler(g, dbHandler);
+            gitHandler.init();
+        }
     }
 
 }

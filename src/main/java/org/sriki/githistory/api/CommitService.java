@@ -163,7 +163,8 @@ public class CommitService extends AbstractService {
         Map<String, String> devDayOfWeek = new HashMap<>();
         for (Map.Entry<String, Long> authCount : authDayCountMap.entrySet()) {
             String author = authCount.getKey().split("-")[0].trim();
-            String day = authCount.getKey().split("-")[1].trim();
+            String[] splits = authCount.getKey().split("-");
+            String day = splits[splits.length - 1].trim();
             Long count = authCount.getValue();
             String dayCountString = devDayOfWeek.get(author);
             if (dayCountString == null) {
